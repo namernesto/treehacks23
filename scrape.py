@@ -1,6 +1,7 @@
 import requests
 import string
 import gensim
+import json
 
 from bs4 import BeautifulSoup
 
@@ -71,7 +72,7 @@ class Faculty:
         # self.title = process_sentence([title.find("h2").get_text() for title in nameAndTitle][0])
         self.title = [title.find("h2").get_text() for title in nameAndTitle][0]
 
-# test_list_faculty = []
+
 
 currFaculty = Faculty("https://profiles.stanford.edu/maneesh-agrawala")
 currFaculty.get_info()
@@ -82,7 +83,7 @@ currFaculty.get_info()
     # for i in range(len(s_pub_titles)):
     #     words = row[i].split()
     #     row[i] = [word2vec_model.wv[word] for word in words]
-print(currFaculty.publication_abstracts)
+# print(currFaculty.publication_abstracts)
 
 
 # test_list_faculty.append(currFaculty)
