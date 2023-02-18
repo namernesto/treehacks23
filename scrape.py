@@ -1,5 +1,6 @@
 import requests
 import string
+import gensim
 import json
 
 from bs4 import BeautifulSoup
@@ -94,11 +95,11 @@ def generate_faculty_info_dict(Faculty, link):
 
 
 
-faculty_info_dict = {}
-    for link in profile_link:
-        cur_faculty_info = generate_faculty_info_dict()
-        # add cur faculty info to facullty info dict 
-        faculty_info_dict[link] = cur_faculty_info
+# faculty_info_dict = {}
+#     for link in profile_link:
+#         cur_faculty_info = generate_faculty_info_dict()
+#         # add cur faculty info to facullty info dict 
+#         faculty_info_dict[link] = cur_faculty_info
         
 # attrs = vars(currFaculty)
 # print('\n\n '.join("%s: %s" % item for item in attrs.items()))
