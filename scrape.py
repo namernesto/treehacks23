@@ -26,10 +26,18 @@ class Faculty:
     def __init__(self, url):
         self.name = None
         self.bio = None
-        self.publication_titles = None
-        self.publication_abstracts = None
+        self.publications = None
+
+        self.publication_titles.publication_abstracts 
         self.title = None
         self.url = url
+
+        # new
+        self.image = None
+        self.email = None
+        self.awards = None
+        self.current_research = None
+        self.teaching = None
 
     def get_info(self):
         result = requests.get(self.url)
@@ -59,6 +67,9 @@ class Faculty:
             temp_pub_titles = [title.find("span", {"class": "title"}).find("span").get_text().replace("\n", "") for title in publications]
             # self.publication_titles = [process_sentence(temp_title) for temp_title in temp_pub_titles]
             self.publication_titles = [temp_title for temp_title in temp_pub_titles]
+
+            # TODO: check if have abstract
+
             # Adds publication abstracts
             temp_pub_abstracts = [pub.get_text() for pub in soup.find_all("p", {"class": "abstract"})]
             # self.publication_abstracts = [process_sentence(temp_abstracts) for temp_abstracts in temp_pub_abstracts]
@@ -72,10 +83,26 @@ class Faculty:
         # self.title = process_sentence([title.find("h2").get_text() for title in nameAndTitle][0])
         self.title = [title.find("h2").get_text() for title in nameAndTitle][0]
 
+with open('profiles-link.json') as f:
+    profile_link = json.load(f)
+
+def generate_faculty_info_dict(Faculty, link):
+    cur_dict = {}
+    currFaculty = Faculty("https://profiles.stanford.edu" + link)
+    currFaculty.get_info()
+    cur_dict
+    return cur_dict
 
 
-currFaculty = Faculty("https://profiles.stanford.edu/maneesh-agrawala")
-currFaculty.get_info()
+
+faculty_info_dict = {}
+    for link in profile_link:
+        cur_faculty_info = generate_faculty_info_dict()
+        # add cur faculty info to facullty info dict 
+        faculty_info_dict[link] = cur_faculty_info
+        
+# attrs = vars(currFaculty)
+# print('\n\n '.join("%s: %s" % item for item in attrs.items()))
 
 # word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('/Documents/word2vec_pre-trained/GoogleNews-vectors-negative300.bin.gz', binary=True)
 # for w_title, w_bio, s_pub_titles, s_pub_abstracts in currFaculty.title, currFaculty.bio, currFaculty.publication_titles, currFaculty.publication_abstracts:
