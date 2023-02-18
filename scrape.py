@@ -27,8 +27,6 @@ class Faculty:
         self.name = None
         self.bio = None
         self.publications = None
-
-        self.publication_titles.publication_abstracts 
         self.title = None
         self.url = url
 
