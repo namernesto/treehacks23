@@ -1,6 +1,5 @@
 import requests
 import string
-import gensim
 import json
 
 from bs4 import BeautifulSoup
