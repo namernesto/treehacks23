@@ -1,13 +1,13 @@
 import requests
 import string
-import gensim
+# import gensim
 import json
 
 from bs4 import BeautifulSoup
 
-from nltk import word_tokenize
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
+# from nltk import word_tokenize
+# from nltk.stem import WordNetLemmatizer
+# from nltk.corpus import stopwords
 
 # TODO: consider lowercase?
 
@@ -48,6 +48,7 @@ class Faculty:
         # Checks if a bio and/or pulications exists
         hasPublications = False
         hasBio = False
+        hasHonors = False
         hasAwards = False
         hasEmail = False
         hasCurResearch = False
@@ -56,7 +57,7 @@ class Faculty:
         for tab in teachingTab:
             if "Teaching" in tab.text:
                 hasTeaching = True
-
+                
         all_h3 = soup.find_all("h3")
         for h3 in all_h3:
             if "Bio" in h3.text:
@@ -70,7 +71,7 @@ class Faculty:
                 hasEmail = True
             if "Current Research and Scholarly Interests" in h3.text: 
                 hasCurResearch = True
-
+                
         all_p = soup.find_all("p")
 
         # Adds faculty bio
