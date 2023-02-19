@@ -2,6 +2,7 @@ import openai
 import pandas as pd
 import numpy as np
 from openai.embeddings_utils import get_embedding, cosine_similarity
+from get_formatted_section.py import get_formatted_section
 
 # Set up API key
 openai.api_key = "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"
@@ -12,82 +13,11 @@ model = "text-embedding-ada-002"
 
 
 
-# Define the document sections and weights
-# TODO: Import CSV file and format sections from CSV file
-cur_prof = {
-    "name": {
-        "texts": [
-            "This is the bio section of the document.",
-            "It contains information about the person's background.",
-            "There may be multiple sentences in each section.",
-        ],
-        "weight": 2.0
-    },
-    "bio": {
-        "texts": [
-            "These are the publications listed in the document.",
-            "They include papers, articles, and books.",
-            "Each publication has a title, author, and publication date."
-        ],
-        "weight": 0.5
-    },
-    "publications_title": {
-        "": [
-            "This is the summary section of the document.",
-            "It provides a brief overview of the main points.",
-            "It is often the first section that readers will read."
-        ],
-        "weight": 1.0
-    },
-    "publications_abstract": {
-        "texts": [
-            "This is the summary section of the document.",
-            "It provides a brief overview of the main points.",
-            "It is often the first section that readers will read."
-        ],
-        "weight": 1.0
-    },
-    "title": {
-        "texts": [
-            "This is the summary section of the document.",
-            "It provides a brief overview of the main points.",
-            "It is often the first section that readers will read."
-        ],
-        "weight": 1.0
-    },
-    "awards": {
-        "texts": [
-            "This is the summary section of the document.",
-            "It provides a brief overview of the main points.",
-            "It is often the first section that readers will read."
-        ],
-        "weight": 1.0
-    },
-    "current_research": {
-        "texts": [
-            "This is the summary section of the document.",
-            "It provides a brief overview of the main points.",
-            "It is often the first section that readers will read."
-        ],
-        "weight": 1.0
-    },
-    "teaching": {
-        "texts": [
-            "This is the summary section of the document.",
-            "It provides a brief overview of the main points.",
-            "It is often the first section that readers will read."
-        ],
-        "weight": 1.0
-    },
-    "url": {
-        "texts": [
-            "This is the summary section of the document.",
-            "It provides a brief overview of the main points.",
-            "It is often the first section that readers will read."
-        ],
-        "weight": 0.0
-    },
-}
+with open('prof-info-0.json') as json_file:
+    data = json.load(json_file)
+
+test = data[0]
+sections = get_formatted_section(test)
 
 # Generate embeddings for each section
 section_embeddings = {}
@@ -113,29 +43,29 @@ document_embedding /= sum([section["weight"] for section in section_embeddings.v
 
 print(document_embedding)
 
-datafile_path = "data/fine_food_reviews_with_embeddings_1k.csv"
-df = pd.read_csv(datafile_path)
-df["embedding"] = df.embedding.apply(eval).apply(np.array)
+# datafile_path = "data/fine_food_reviews_with_embeddings_1k.csv"
+# df = pd.read_csv(datafile_path)
+# df["embedding"] = df.embedding.apply(eval).apply(np.array)
 
-# search through the reviews for a specific product
-def search_reviews(df, product_description, n=3):
-    product_embedding = get_embedding(
-        product_description,
-        engine="text-embedding-ada-002"
-    )
-    df["similarity"] = df.embedding.apply(lambda x: cosine_similarity(x, product_embedding))
+# # search through the reviews for a specific product
+# def search_reviews(df, product_description, n=3):
+#     product_embedding = get_embedding(
+#         product_description,
+#         engine="text-embedding-ada-002"
+#     )
+#     df["similarity"] = df.embedding.apply(lambda x: cosine_similarity(x, product_embedding))
 
-    results = (
-        df.sort_values("similarity", ascending=False)
-        .head(n)
-        .combined.str.replace("Title: ", "")
-        .str.replace("; Content:", ": ")
-    )
-    return results
+#     results = (
+#         df.sort_values("similarity", ascending=False)
+#         .head(n)
+#         .combined.str.replace("Title: ", "")
+#         .str.replace("; Content:", ": ")
+#     )
+#     return results
 
 
 
-results = search_reviews(df, "delicious beans", n=3)
+# results = search_reviews(df, "delicious beans", n=3)
 
 
 
