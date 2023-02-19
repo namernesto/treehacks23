@@ -76,31 +76,37 @@ class Faculty:
         # Adds faculty bio
         if hasBio:
             bio_class = soup.find_all("div", {"id": "bioContent"})
-            self.bio = [bio.find("p").get_text() for bio in bio_class][0]
+            try:
+                self.bio = [bio.find("p").get_text() for bio in bio_class][0]
+            except:
+                self.bio = None
 
         if hasPublications:
             self.publications = {}
             # Adds publication titles
             publications = soup.find_all("li", {"class": "publication inproceedings"}) + soup.find_all("li", {"class": "publication article"}) 
             for publication in publications:
-                title = publication.find("span", {"class": "title"}).find("span").get_text().replace("\n", "")
-                abstract = ""
-                abstract_html = publication.find("p", {"class": "abstract"})
-                if abstract_html is not None:
-                    abstract = abstract_html.get_text()
-                self.publications[title] = abstract
+                try: 
+                    title = publication.find("span", {"class": "title"}).find("span").get_text().replace("\n", "")
+                    abstract = ""
+                    abstract_html = publication.find("p", {"class": "abstract"})
+                    if abstract_html is not None:
+                        abstract = abstract_html.get_text()
+                    self.publications[title] = abstract
+                except:
+                    continue
 
         if hasAwards:
             # Adds faculty awards
             awardID = soup.find_all("div", {"id": "honorsAndAwardsContent"})
             self.awards = [awardID.find_all("div" , {"class": "description bulleted"}).get_text()] # don't think I need this award
 
-        if hasEmail:
-            # Adds faculty email
-            botPadList = soup.find_all("div", {"class": "extra-bottom-padding"})
-            # print(botPadList)
-            t = [w.find("a") for w in botPadList]
-            self.email = t
+        # if hasEmail:
+        #     # Adds faculty email
+        #     botPadList = soup.find_all("div", {"class": "extra-bottom-padding"})
+        #     # print(botPadList)
+        #     t = [w.find("a") for w in botPadList]
+        #     self.email = t
             # print(self.email)
 
         # Adds faculty teaching
@@ -126,16 +132,16 @@ class Faculty:
 with open('scraping/output-files/profiles-links.json') as f:
     data = json.load(f)
 
-professor_info = []
-for i in range(5):
-    print(data[i])
-    t = generate_faculty_info_dict(Faculty, data[i])
-    professor_info.append(t)
-
-# TODO: put in loop
-file_path = "scraping/output-files/prof-info-1"
-with open(file_path, "w") as f:
-    json.dump(professor_info, f)
-# t = generate_faculty_info_dict(Faculty, "/oliver-aalami")
-# for k, v in t.items():
-#     print(k, v)
+chunks = [data[x:x+200] for x in range(0, len(data), 200)]
+i = 0
+for chunk in chunks:
+    prof_info = []
+    for prof in chunk:
+        print(prof)
+        t = generate_faculty_info_dict(Faculty, prof)
+        prof_info.append(t)
+    file_path = "scraping/output-files/prof-info-" + str(i) +".json"
+    with open(file_path, "w") as f:
+        json.dump(prof_info, f)
+    print('chunk ', i)
+    i += 1
