@@ -15,5 +15,5 @@ for i in range(1, 75):
         href = link.get("href")
         if href:
             links.append(href)
-with open("profiles-links.json", "w") as outfile:
+with open("/scraping/output-files/profiles-links.json", "w") as outfile:
     json.dump(links, outfile)
