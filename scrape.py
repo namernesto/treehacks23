@@ -11,6 +11,12 @@ from nltk.corpus import stopwords
 
 # TODO: consider lowercase?
 
+def generate_faculty_info_dict(Faculty, link):
+    currFaculty = Faculty("https://profiles.stanford.edu" + link)
+    currFaculty.get_info()
+    cur_dict = currFaculty.__dict__
+    return cur_dict
+
 def process_sentence(words):
     stop_words = set(stopwords.words('english'))
     lemmatizer = WordNetLemmatizer()
@@ -29,8 +35,6 @@ class Faculty:
         self.publications = None
         self.title = None
         self.url = url
-
-        # new
         self.image = None
         self.email = None
         self.awards = None
@@ -44,71 +48,94 @@ class Faculty:
         # Checks if a bio and/or pulications exists
         hasPublications = False
         hasBio = False
+        hasAwards = False
+        hasEmail = False
+        hasCurResearch = False
+        hasTeaching = False 
+        teachingTab = soup.find_all("a", {"id": "teachingTabLink"})
+        for tab in teachingTab:
+            if "Teaching" in tab.text:
+                hasTeaching = True
+
         all_h3 = soup.find_all("h3")
         for h3 in all_h3:
             if "Bio" in h3.text:
                 hasBio = True
             if "All Publications" in h3.text:
                 hasPublications = True
+            if "Honor & Awards" in h3.text:
+                hasAwards = True
+            # slightly misleading, as you can have contact but not email, can fix later
+            if "Contact" in h3:
+                hasEmail = True
+            if "Current Research and Scholarly Interests" in h3.text: 
+                hasCurResearch = True
 
         all_p = soup.find_all("p")
 
         # Adds faculty bio
         if hasBio:
             bio_class = soup.find_all("div", {"id": "bioContent"})
-            # self.bio = process_sentence([bio.find("p").get_text() for bio in bio_class][0])
             self.bio = [bio.find("p").get_text() for bio in bio_class][0]
 
         if hasPublications:
+            self.publications = {}
             # Adds publication titles
             publications = soup.find_all("li", {"class": "publication inproceedings"}) + soup.find_all("li", {"class": "publication article"}) 
-            temp_pub_titles = [title.find("span", {"class": "title"}).find("span").get_text().replace("\n", "") for title in publications]
-            # self.publication_titles = [process_sentence(temp_title) for temp_title in temp_pub_titles]
-            self.publication_titles = [temp_title for temp_title in temp_pub_titles]
+            for publication in publications:
+                title = publication.find("span", {"class": "title"}).find("span").get_text().replace("\n", "")
+                abstract = ""
+                abstract_html = publication.find("p", {"class": "abstract"})
+                if abstract_html is not None:
+                    abstract = abstract_html.get_text()
+                self.publications[title] = abstract
 
-            # TODO: check if have abstract
+        if hasAwards:
+            # Adds faculty awards
+            awardID = soup.find_all("div", {"id": "honorsAndAwardsContent"})
+            self.awards = [awardID.find_all("div" , {"class": "description bulleted"}).get_text()] # don't think I need this award
 
-            # Adds publication abstracts
-            temp_pub_abstracts = [pub.get_text() for pub in soup.find_all("p", {"class": "abstract"})]
-            # self.publication_abstracts = [process_sentence(temp_abstracts) for temp_abstracts in temp_pub_abstracts]
-            self.publication_abstracts = [temp_abstracts for temp_abstracts in temp_pub_abstracts]
+        if hasEmail:
+            # Adds faculty email
+            botPadList = soup.find_all("div", {"class": "extra-bottom-padding"})
+            # print(botPadList)
+            t = [w.find("a") for w in botPadList]
+            self.email = t
+            # print(self.email)
 
+        # Adds faculty teaching
+        if hasTeaching:
+            class_course = soup.find_all("li", {"class", "course"})
+            self.teaching = list(set([c.find("a").text for c in class_course]))
+
+        if hasCurResearch: 
+            divID = soup.find("div", {"id": "currentResearchAndScholarlyInterestsContent"})
+            self.current_research = divID.find("p").get_text()
+
+        # Adds faculty image
+        image_holder = soup.find_all("div", {"class": "image-holder"})
+        self.image = [i.find("img") for i in image_holder][0].get('src')
+        
         # Adds faculty name
         nameAndTitle = soup.find_all("div", {"class": "nameAndTitle"})
         self.name = [name.find("h1").get_text() for name in nameAndTitle][0]
 
         # Adds faculty title
-        # self.title = process_sentence([title.find("h2").get_text() for title in nameAndTitle][0])
         self.title = [title.find("h2").get_text() for title in nameAndTitle][0]
 
-with open('profiles-link.json') as f:
-    profile_link = json.load(f)
+with open('scraping/output-files/profiles-links.json') as f:
+    data = json.load(f)
 
-def generate_faculty_info_dict(Faculty, link):
-    cur_dict = {}
-    currFaculty = Faculty("https://profiles.stanford.edu" + link)
-    currFaculty.get_info()
-    cur_dict
-    return cur_dict
+professor_info = []
+for i in range(5):
+    print(data[i])
+    t = generate_faculty_info_dict(Faculty, data[i])
+    professor_info.append(t)
 
-
-
-# faculty_info_dict = {}
-#     for link in profile_link:
-#         cur_faculty_info = generate_faculty_info_dict()
-#         # add cur faculty info to facullty info dict 
-#         faculty_info_dict[link] = cur_faculty_info
-        
-# attrs = vars(currFaculty)
-# print('\n\n '.join("%s: %s" % item for item in attrs.items()))
-
-# word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('/Documents/word2vec_pre-trained/GoogleNews-vectors-negative300.bin.gz', binary=True)
-# for w_title, w_bio, s_pub_titles, s_pub_abstracts in currFaculty.title, currFaculty.bio, currFaculty.publication_titles, currFaculty.publication_abstracts:
-#     w_title = word2vec_model.wv[w_title]
-    # for i in range(len(s_pub_titles)):
-    #     words = row[i].split()
-    #     row[i] = [word2vec_model.wv[word] for word in words]
-# print(currFaculty.publication_abstracts)
-
-
-# test_list_faculty.append(currFaculty)
+# TODO: put in loop
+file_path = "scraping/output-files/prof-info-1"
+with open(file_path, "w") as f:
+    json.dump(professor_info, f)
+# t = generate_faculty_info_dict(Faculty, "/oliver-aalami")
+# for k, v in t.items():
+#     print(k, v)
