@@ -97,9 +97,11 @@ class Faculty:
 
         if hasEmail:
             # Adds faculty email
-            contactInfoDiv = soup.find("div", {"class": "contact-info"})
-            emailDiv = contactInfoDiv.find("div", {"class": "extra-bottom-padding"})
-            self.email = emailDiv.find("a").get_text()
+            botPadList = soup.find_all("div", {"class": "extra-bottom-padding"})
+            # print(botPadList)
+            t = [w.find("a") for w in botPadList]
+            self.email = t
+            # print(self.email)
 
         # Adds faculty teaching
         if hasTeaching:
@@ -121,36 +123,19 @@ class Faculty:
         # Adds faculty title
         self.title = [title.find("h2").get_text() for title in nameAndTitle][0]
 
-# f = Faculty("https://profiles.stanford.edu/jijumon-a-s")
-# f.get_info()
+with open('scraping/output-files/profiles-links.json') as f:
+    data = json.load(f)
 
-t = generate_faculty_info_dict(Faculty, "/oliver-aalami")
-for k, v in t.items():
-    print(k, v)
+professor_info = []
+for i in range(5):
+    print(data[i])
+    t = generate_faculty_info_dict(Faculty, data[i])
+    professor_info.append(t)
 
-# with open('profiles-link.json') as f:
-#     profile_link = json.load(f)
-
-
-
-
-
-# faculty_info_dict = {}
-#     for link in profile_link:
-#         cur_faculty_info = generate_faculty_info_dict()
-#         # add cur faculty info to facullty info dict 
-#         faculty_info_dict[link] = cur_faculty_info
-        
-# attrs = vars(currFaculty)
-# print('\n\n '.join("%s: %s" % item for item in attrs.items()))
-
-# word2vec_model = gensim.models.KeyedVectors.load_word2vec_format('/Documents/word2vec_pre-trained/GoogleNews-vectors-negative300.bin.gz', binary=True)
-# for w_title, w_bio, s_pub_titles, s_pub_abstracts in currFaculty.title, currFaculty.bio, currFaculty.publication_titles, currFaculty.publication_abstracts:
-#     w_title = word2vec_model.wv[w_title]
-    # for i in range(len(s_pub_titles)):
-    #     words = row[i].split()
-    #     row[i] = [word2vec_model.wv[word] for word in words]
-# print(currFaculty.publication_abstracts)
-
-
-# test_list_faculty.append(currFaculty)
+# TODO: put in loop
+file_path = "scraping/output-files/prof-info-1"
+with open(file_path, "w") as f:
+    json.dump(professor_info, f)
+# t = generate_faculty_info_dict(Faculty, "/oliver-aalami")
+# for k, v in t.items():
+#     print(k, v)
