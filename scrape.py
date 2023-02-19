@@ -1,13 +1,13 @@
 import requests
 import string
-# import gensim
+import gensim
 import json
 
 from bs4 import BeautifulSoup
 
-# from nltk import word_tokenize
-# from nltk.stem import WordNetLemmatizer
-# from nltk.corpus import stopwords
+from nltk import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
 
 # TODO: consider lowercase?
 
@@ -48,7 +48,6 @@ class Faculty:
         # Checks if a bio and/or pulications exists
         hasPublications = False
         hasBio = False
-        hasHonors = False
         hasAwards = False
         hasEmail = False
         hasCurResearch = False
@@ -57,7 +56,7 @@ class Faculty:
         for tab in teachingTab:
             if "Teaching" in tab.text:
                 hasTeaching = True
-                
+
         all_h3 = soup.find_all("h3")
         for h3 in all_h3:
             if "Bio" in h3.text:
@@ -71,37 +70,43 @@ class Faculty:
                 hasEmail = True
             if "Current Research and Scholarly Interests" in h3.text: 
                 hasCurResearch = True
-                
+
         all_p = soup.find_all("p")
 
         # Adds faculty bio
         if hasBio:
             bio_class = soup.find_all("div", {"id": "bioContent"})
-            self.bio = [bio.find("p").get_text() for bio in bio_class][0]
+            try:
+                self.bio = [bio.find("p").get_text() for bio in bio_class][0]
+            except:
+                self.bio = None
 
         if hasPublications:
             self.publications = {}
             # Adds publication titles
             publications = soup.find_all("li", {"class": "publication inproceedings"}) + soup.find_all("li", {"class": "publication article"}) 
             for publication in publications:
-                title = publication.find("span", {"class": "title"}).find("span").get_text().replace("\n", "")
-                abstract = ""
-                abstract_html = publication.find("p", {"class": "abstract"})
-                if abstract_html is not None:
-                    abstract = abstract_html.get_text()
-                self.publications[title] = abstract
+                try: 
+                    title = publication.find("span", {"class": "title"}).find("span").get_text().replace("\n", "")
+                    abstract = ""
+                    abstract_html = publication.find("p", {"class": "abstract"})
+                    if abstract_html is not None:
+                        abstract = abstract_html.get_text()
+                    self.publications[title] = abstract
+                except:
+                    continue
 
         if hasAwards:
             # Adds faculty awards
             awardID = soup.find_all("div", {"id": "honorsAndAwardsContent"})
             self.awards = [awardID.find_all("div" , {"class": "description bulleted"}).get_text()] # don't think I need this award
 
-        if hasEmail:
-            # Adds faculty email
-            botPadList = soup.find_all("div", {"class": "extra-bottom-padding"})
-            # print(botPadList)
-            t = [w.find("a") for w in botPadList]
-            self.email = t
+        # if hasEmail:
+        #     # Adds faculty email
+        #     botPadList = soup.find_all("div", {"class": "extra-bottom-padding"})
+        #     # print(botPadList)
+        #     t = [w.find("a") for w in botPadList]
+        #     self.email = t
             # print(self.email)
 
         # Adds faculty teaching
